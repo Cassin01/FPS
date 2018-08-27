@@ -6,21 +6,14 @@
 
 GLuint objects;
 
-double ex = 0.0, ez = 0.0;
-double r = 0.0;
-
-double jx = 0.0, jz = 0.0;
-double jr = 0.0;
-
-double ws = 0.0, hs = 0.0;
 
 void display(void) {
   // position of light
   static GLfloat lightpos[] = { 3.0, 4.0, 5.0, 1.0 };
   // position of eye
-  //static double ex = 0.0, ez = 0.0;
+  static double ex = 0.0, ez = 0.0;
   // direction of eye
-  //static double r = 0.0;
+  static double r = 0.0;
 
   // clear window
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -42,8 +35,6 @@ void display(void) {
 }
 
 void resize(int w, int h) {
-  ws = w / 2;
-  hs = h / 2;
   glViewport(0, 0, w, h);
 
   glMatrixMode(GL_PROJECTION);
@@ -52,18 +43,12 @@ void resize(int w, int h) {
   gluPerspective(30.0, (double)w / (double)h, 1.0, 100.0);
 
   glMatrixMode(GL_MODELVIEW);
-
-  glOrtho(-0.5, (GLdouble)w - 0.5, (GLdouble) h - 0.5, -0.5, -1.0, 1.0);
 }
 
 void keyboard(unsigned char key, int x, int y) {
   if (key == '\033' || key == 'q') {
     exit(0);
   }
-}
-
-void idle(void) {
-  glutPostRedisplay();
 }
 
 void scene(void) {
@@ -131,43 +116,6 @@ void scene(void) {
 // z正方向 : 前側
 // jr はy軸正方向からの角度(degree)
 
-float radian_to_degree(float radian) {
-  return radian * 180.0 / M_PI;
-}
-float degree_to_radian(float degree) {
-  return degree * M_PI / 180.0;
-}
-
-void define_direction(int x, int y) {
-  int speed = 100;
-  float vx = (x - ws) / (ws * 2);
-  float vy = (hs - y) / (hs * 2);
-  std::cout << "vx " << vx << std::endl;
-  if (vx > 0) {
-    jr = radian_to_degree(
-      std::acos(vy / std::sqrt(std::pow(vx, 2) + std::pow(vy, 2))));
-  }
-  else if (vx < 0) {
-    jr = radian_to_degree(
-      std::acos(vy / std::sqrt(std::pow(vx, 2) + std::pow(vy, 2)))) * -1;
-  }
-
-  r  = r  + jr / 200;
-
-  jx = std::sqrt(
-        std::pow(vx, 2) + std::pow(vy, 2)
-        ) * std::sin(degree_to_radian(r));
-  jz = std::sqrt(
-        std::pow(vx, 2) + std::pow(vy, 2)
-        ) * std::cos(degree_to_radian(r));
-
-  ex = ex + jx / 10;
-  ez = ez + jz / 10;
-
-  std::cout << "jr " << jr << std::endl;
-  std::cout << "jx " << jx << " jz " << jz << std::endl;
-}
-
 void motion(int x, int y) {
   static bool wrap = false;
 
@@ -185,26 +133,6 @@ void motion(int x, int y) {
   }
 }
 
-void mouse(int button, int state, int x, int y) {
-  switch (button) {
-    case GLUT_LEFT_BUTTON:
-      if (state == GLUT_DOWN) {
-        glutIdleFunc(idle);
-        define_direction(x, y);
-      }
-      else {
-        glutIdleFunc(0);
-      }
-      break;
-    case GLUT_RIGHT_BUTTON:
-      if (state == GLUT_DOWN) {
-        define_direction(x, y);
-        glutPostRedisplay();
-      }
-    default:
-      break;
-  }
-}
 
 void init(void) {
   glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -221,7 +149,6 @@ int main(int argc, char *argv[]) {
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
   glutKeyboardFunc(keyboard);
-  glutMouseFunc(mouse);
   scene();
   init();
   glutMainLoop();
